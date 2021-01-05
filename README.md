@@ -59,8 +59,9 @@ sudo chmod -R 775 app-laravel/storage/
 
 ## ubuntu
 ```
-docker-compose build ubuntu
-docker run -it --rm ubuntu202 bash
+# docker run -it --rm ubuntu202 bash
+docker-compose up -d ubuntu
+docker-compose exec ubuntu bash
 ```
 
 ## python

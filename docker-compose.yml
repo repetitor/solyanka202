@@ -32,8 +32,8 @@ services:
     build:
       context: ./docker/ubuntu
     image: ubuntu202
-#    volumes:
-#      - ./sandbox:/sandbox
+    volumes:
+      - ./sandbox:/sandbox
 
   python:
     command: python3 -m http.server 1234
