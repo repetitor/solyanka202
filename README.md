@@ -56,3 +56,15 @@ sudo chmod -R 775 app-laravel/storage/
 # browser >> 192.168.16.2 -> success ??? !!!
 
 ```
+
+## ubuntu
+```
+docker-compose build ubuntu
+docker run -it --rm ubuntu202 bash
+```
+
+## python
+```
+docker-compose up -d python
+docker-compose exec python bash
+```
