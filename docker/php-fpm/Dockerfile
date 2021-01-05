@@ -11,9 +11,9 @@ RUN addgroup --gid $UID --system $NGINX_PHP_USER \
 ARG PATH_LISTEN_SETTINGS=/usr/local/etc/php-fpm.d/zz-docker.conf
 
 RUN sed -i 's@listen = 9000@listen = /sock/docker.sock@' $PATH_LISTEN_SETTINGS \
-    && echo 'listen.owner = '$NGINX_PHP_USER >> $PATH_LISTEN_SETTINGS
-#    && echo 'listen.group = '$NGINX_PHP_USER >> $PATH_LISTEN_SETTINGS \
-#    && echo 'listen.mode = 0660' >> $PATH_LISTEN_SETTINGS
+    && echo 'listen.owner = '$NGINX_PHP_USER >> $PATH_LISTEN_SETTINGS \
+    && echo 'listen.group = '$NGINX_PHP_USER >> $PATH_LISTEN_SETTINGS \
+    && echo 'listen.mode = 0660' >> $PATH_LISTEN_SETTINGS
 
 WORKDIR /app
 CMD ["php-fpm"]
