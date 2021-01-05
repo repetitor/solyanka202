@@ -1,0 +1,35 @@
+version: '3.7'
+
+services:
+  #  nginx, laravel, UNIX-socket
+  nginx:
+    build:
+      context: ./docker/nginx
+      args:
+        UID: $UID
+        NGINX_PHP_USER: $NGINX_PHP_USER
+    image: solyanka/nginx
+    volumes:
+      - ./data/sock:/sock
+      - ./docker/nginx/default.conf:/etc/nginx/sites-enabled/default
+      - ./logs/nginx:/var/log/nginx
+    networks:
+      laravel-network:
+        ipv4_address: "${LARAVEL_NETWORK_ID}.2"
+  app:
+    build:
+      context: ./docker/php-fpm
+      args:
+        UID: $UID
+        NGINX_PHP_USER: $NGINX_PHP_USER
+    image: solyanka/php-fpm
+    volumes:
+      - ./data/sock:/sock
+      - ./app-laravel:/app
+  #  / nginx, laravel, UNIX-socket
+
+networks:
+  laravel-network:
+    ipam:
+      config:
+        - subnet: "${LARAVEL_NETWORK_ID}.0/24"
