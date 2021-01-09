@@ -1,6 +1,8 @@
 # solyanka202
 
-## deploy original laravel
+## apps
+
+### deploy original laravel
 ```
 cp app-laravel/.env.example app-laravel/.env
 
@@ -24,7 +26,7 @@ sudo chmod -R 777 app-laravel/storage/
 # browser >> laravel.loc
 ```
 
-### challenge
+#### challenge
 ```
 # browser >> 192.168.16.2 -> success
 
@@ -57,33 +59,58 @@ sudo chmod -R 775 app-laravel/storage/
 
 ```
 
-## ubuntu
+## OSs
+
+### ubuntu
 ```
 # docker run -it --rm ubuntu202 bash
 docker-compose up -d ubuntu
 docker-compose exec ubuntu bash
 ```
 
-## python
-```
-docker-compose up -d python
-docker-compose exec python bash
-```
+## databases
 
-## mysql
+### mysql
 ```
 docker-compose up -d mysql
 mysql -u root -p draft < trymysql.sql
 ```
 
-## mariadb
+### mariadb
 ```
 docker-compose up -d mariadb
 mysql -u root -p draft < trymysql.sql
 ```
 
-## postgres
+### postgres
 ```
 docker-compose up -d postgres
 psql -h localhost -p 5432 -U docker -d docker < trymysql.sql
+```
+
+## languages
+
+### python
+```
+docker-compose up -d python
+docker-compose exec python bash
+
+# browser:
+# - 192.168.17.5:1234
+# - localhost:1234
+```
+
+### php
+```
+docker-compose up -d php
+docker-compose exec php bash
+
+# browser: 
+# - 192.168.17.6:8000
+# - localhost:8000
+```
+
+#### challenge
+```
+192.168.17.6:8000 => This site can’t be reached ???
 ```

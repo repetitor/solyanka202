@@ -4,7 +4,7 @@ services:
   #  nginx, laravel, UNIX-socket
   nginx:
     build:
-      context: ./docker/nginx
+      context: ./docker/nginx-with-php-fpm-use-unix-socket
       args:
         UID: $UID
         NGINX_PHP_USER: $NGINX_PHP_USER
@@ -18,7 +18,7 @@ services:
         ipv4_address: "${LARAVEL_NETWORK_ID}.2"
   app:
     build:
-      context: ./docker/php-fpm
+      context: ./docker/php-fpm-with-nginx-use-unix-socket
       args:
         UID: $UID
         NGINX_PHP_USER: $NGINX_PHP_USER
@@ -35,15 +35,6 @@ services:
     volumes:
       - ./sandbox:/sandbox
 
-  python:
-    command: python3 -m http.server 1234
-    build:
-      context: ./docker/python
-    volumes:
-      - ./sandbox:/sandbox
-    ports:
-      - ${PYTHON_APP_PORT}:1234
-
   mysql:
     command: --default-authentication-plugin=mysql_native_password
 #    image: mysql
@@ -53,15 +44,15 @@ services:
 #    ports:
 #      - ${MYSQL_PORT}:3306
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./sandbox:/sandbox
       - ./data/mysql-draft:/var/lib/mysql
       - ./logs/mysql-draft:/var/log/mysql
     networks:
       draft-network:
-        ipv4_address: "${DRAFT_NETWORK_ID}.2"
+        ipv4_address: "${SANDBOX_NETWORK_ID}.2"
 
   mariadb:
     command: --default-authentication-plugin=mysql_native_password
@@ -72,15 +63,15 @@ services:
 #    ports:
 #      - ${MARIADB_PORT}:3306
     environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./sandbox:/sandbox
       - ./data/mariadb-draft:/var/lib/mysql
       - ./logs/mariadb-draft:/var/log/mysql
     networks:
       draft-network:
-        ipv4_address: "${DRAFT_NETWORK_ID}.3"
+        ipv4_address: "${SANDBOX_NETWORK_ID}.3"
 
   postgres:
 #    image: postgres:10.14
@@ -90,14 +81,38 @@ services:
 #    ports:
 #      - ${POSTGRES_PORT}:5432
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./sandbox:/sandbox
       - ./data/postgresql-draft:/var/lib/postgresql
       - ./logs/postgresql-draft:/var/log/postgresql
     networks:
       draft-network:
-        ipv4_address: "${DRAFT_NETWORK_ID}.4"
+        ipv4_address: "${SANDBOX_NETWORK_ID}.4"
+
+  python:
+    command: python3 -m http.server 1234
+    build:
+      context: ./docker/python
+    volumes:
+      - ./sandbox:/sandbox
+    ports:
+      - ${PYTHON_SANDBOX_PORT}:1234
+    networks:
+      draft-network:
+        ipv4_address: "${SANDBOX_NETWORK_ID}.5"
+
+  php:
+    command: php -S localhost:8000
+    build:
+      context: ./docker/php
+    volumes:
+      - ./sandbox:/sandbox
+#    ports:
+#      - ${PHP_SANDBOX_PORT}:8000
+    networks:
+      draft-network:
+        ipv4_address: "${SANDBOX_NETWORK_ID}.6"
 
 
 networks:
@@ -108,4 +123,4 @@ networks:
   draft-network:
     ipam:
       config:
-        - subnet: "${DRAFT_NETWORK_ID}.0/24"
+        - subnet: "${SANDBOX_NETWORK_ID}.0/24"
