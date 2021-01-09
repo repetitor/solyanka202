@@ -69,3 +69,21 @@ docker-compose exec ubuntu bash
 docker-compose up -d python
 docker-compose exec python bash
 ```
+
+## mysql
+```
+docker-compose up -d mysql
+mysql -u root -p draft < trymysql.sql
+```
+
+## mariadb
+```
+docker-compose up -d mariadb
+mysql -u root -p draft < trymysql.sql
+```
+
+## postgres
+```
+docker-compose up -d postgres
+psql -h localhost -p 5432 -U docker -d docker < trymysql.sql
+```

@@ -44,8 +44,68 @@ services:
     ports:
       - ${PYTHON_APP_PORT}:1234
 
+  mysql:
+    command: --default-authentication-plugin=mysql_native_password
+#    image: mysql
+    build:
+      context: ./docker/mysql
+#    restart: always
+#    ports:
+#      - ${MYSQL_PORT}:3306
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./sandbox:/sandbox
+      - ./data/mysql-draft:/var/lib/mysql
+      - ./logs/mysql-draft:/var/log/mysql
+    networks:
+      draft-network:
+        ipv4_address: "${DRAFT_NETWORK_ID}.2"
+
+  mariadb:
+    command: --default-authentication-plugin=mysql_native_password
+#    image: mariadb
+    build:
+      context: ./docker/mariadb
+#    restart: always
+#    ports:
+#      - ${MARIADB_PORT}:3306
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./sandbox:/sandbox
+      - ./data/mariadb-draft:/var/lib/mysql
+      - ./logs/mariadb-draft:/var/log/mysql
+    networks:
+      draft-network:
+        ipv4_address: "${DRAFT_NETWORK_ID}.3"
+
+  postgres:
+#    image: postgres:10.14
+    build:
+      context: ./docker/postgres
+#    restart: always
+#    ports:
+#      - ${POSTGRES_PORT}:5432
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./sandbox:/sandbox
+      - ./data/postgresql-draft:/var/lib/postgresql
+      - ./logs/postgresql-draft:/var/log/postgresql
+    networks:
+      draft-network:
+        ipv4_address: "${DRAFT_NETWORK_ID}.4"
+
+
 networks:
   laravel-network:
     ipam:
       config:
         - subnet: "${LARAVEL_NETWORK_ID}.0/24"
+  draft-network:
+    ipam:
+      config:
+        - subnet: "${DRAFT_NETWORK_ID}.0/24"
