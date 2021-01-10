@@ -2,6 +2,8 @@
 
 .env
 
+vendor
+
 /data
 /logs
 /sandbox/draft
