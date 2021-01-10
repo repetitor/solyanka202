@@ -73,19 +73,33 @@ docker-compose exec ubuntu bash
 ### mysql
 ```
 docker-compose up -d mysql
+docker-compose exec mysql bash
+# =>
 mysql -u root -p draft < trymysql.sql
 ```
 
 ### mariadb
 ```
 docker-compose up -d mariadb
+docker-compose exec mariadb bash
+# =>
 mysql -u root -p draft < trymysql.sql
 ```
 
 ### postgres
 ```
 docker-compose up -d postgres
+docker-compose exec postgres bash
+# =>
 psql -h localhost -p 5432 -U docker -d docker < trymysql.sql
+```
+
+### clickhouse
+```
+docker-compose up -d clickhouse
+docker-compose exec clickhouse bash
+# =>
+clickhouse-client
 ```
 
 ## languages
