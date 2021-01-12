@@ -7,3 +7,5 @@ vendor
 /data
 /logs
 /sandbox/draft
+
+/app-core

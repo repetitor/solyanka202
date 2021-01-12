@@ -4,25 +4,28 @@
 
 ### deploy original laravel
 ```
-cp app-laravel/.env.example app-laravel/.env
+docker-compose up -d laravel
+docker-compose up -d nginx-laravel
 
-docker-compose up -d app
-docker-compose up -d nginx
-
-docker-compose exec app bash
+#docker-compose exec <app> bash
+docker-compose exec laravel bash
 # =>
-composer install
+cp .env.example .env
 php artisan key:generate
+
+#composer install --ignore-platform-reqs
+composer install
+
+#chown -R <UID>:<GID> ./../app
+chown -R 1000:1000 ./../app
+
 exit
 # =>
-sudo chown -R 1000:1000 app-laravel/
-
-sudo chmod -R 755 app-laravel/storage/
 
 # browser >> 192.168.16.2
 # or
-# sudo bash -c "echo \"192.168.16.12 laravel.loc\" >> /etc/hosts"
-# browser >> laravel.loc
+# sudo bash -c "echo \"192.168.16.12 laravel.docker.loc\" >> /etc/hosts"
+# browser >> laravel.docker.loc
 ```
 
 ## OSs

@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   #  nginx, laravel, UNIX-socket
-  nginx:
+  nginx-laravel:
     build:
       context: ./docker/nginx-with-php-fpm-use-unix-socket
       args:
@@ -15,7 +15,7 @@ services:
     networks:
       laravel-network:
         ipv4_address: "${LARAVEL_NETWORK_ID}.2"
-  app:
+  laravel:
     build:
       context: ./docker/php-fpm-with-nginx-use-unix-socket
       args:
@@ -26,6 +26,33 @@ services:
       - ./data/sock:/sock
       - ./app-laravel:/app
   #  / nginx, laravel, UNIX-socket
+
+  # core - private
+  nginx-core:
+    build:
+      context: ./docker/nginx-with-php-fpm-use-unix-socket
+      args:
+        UID: $UID
+        NGINX_PHP_USER: $NGINX_PHP_USER
+    volumes:
+      - ./data/sock-core:/sock
+      - ./docker/nginx-with-php-fpm-use-unix-socket/default.conf:/etc/nginx/sites-enabled/default
+      - ./logs/nginx-with-php-fpm-use-unix-socket:/var/log/nginx
+    networks:
+      core-network:
+        ipv4_address: "${CORE_NETWORK_ID}.2"
+
+  core:
+    build:
+      context: ./docker/php-fpm-with-nginx-use-unix-socket
+      args:
+        UID: $UID
+        NGINX_PHP_USER: $NGINX_PHP_USER
+    working_dir: /app
+    volumes:
+      - ./data/sock-core:/sock
+      - ./app-core:/app
+  # /core - private
 
   ubuntu:
     build:
@@ -166,3 +193,7 @@ networks:
     ipam:
       config:
         - subnet: "${SANDBOX_NETWORK_ID}.0/24"
+  core-network:
+    ipam:
+      config:
+        - subnet: "${CORE_NETWORK_ID}.0/24"
