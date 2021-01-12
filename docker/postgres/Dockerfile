@@ -6,4 +6,4 @@ COPY docker-entrypoint-initdb.d/create-docker-db.sh /docker-entrypoint-initdb.d/
 RUN chmod +x  /docker-entrypoint-initdb.d/create-docker-db.sh
 
 #EXPOSE 5432
-WORKDIR /sandbox
+#WORKDIR /sandbox

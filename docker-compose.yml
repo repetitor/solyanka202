@@ -8,7 +8,6 @@ services:
       args:
         UID: $UID
         NGINX_PHP_USER: $NGINX_PHP_USER
-    image: solyanka/nginx
     volumes:
       - ./data/sock:/sock
       - ./docker/nginx-with-php-fpm-use-unix-socket/default.conf:/etc/nginx/sites-enabled/default
@@ -22,7 +21,7 @@ services:
       args:
         UID: $UID
         NGINX_PHP_USER: $NGINX_PHP_USER
-    image: solyanka/php-fpm
+    working_dir: /app
     volumes:
       - ./data/sock:/sock
       - ./app-laravel:/app
@@ -32,14 +31,16 @@ services:
     build:
       context: ./docker/ubuntu
     image: ubuntu202
+    working_dir: /sandbox
     volumes:
       - ./sandbox:/sandbox
 
   mysql:
     command: --default-authentication-plugin=mysql_native_password
-#    image: mysql
-    build:
-      context: ./docker/mysql
+    image: mysql
+#    build:
+#      context: ./docker/mysql
+    working_dir: /sandbox
 #    restart: always
 #    ports:
 #      - ${MYSQL_PORT}:3306
@@ -51,14 +52,15 @@ services:
       - ./data/mysql-draft:/var/lib/mysql
       - ./logs/mysql-draft:/var/log/mysql
     networks:
-      draft-network:
+      sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.2"
 
   mariadb:
     command: --default-authentication-plugin=mysql_native_password
-#    image: mariadb
-    build:
-      context: ./docker/mariadb
+    image: mariadb
+#    build:
+#      context: ./docker/mariadb
+    working_dir: /sandbox
 #    restart: always
 #    ports:
 #      - ${MARIADB_PORT}:3306
@@ -70,13 +72,14 @@ services:
       - ./data/mariadb-draft:/var/lib/mysql
       - ./logs/mariadb-draft:/var/log/mysql
     networks:
-      draft-network:
+      sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.3"
 
   postgres:
 #    image: postgres:10.14
     build:
       context: ./docker/postgres
+    working_dir: /sandbox
 #    restart: always
 #    ports:
 #      - ${POSTGRES_PORT}:5432
@@ -87,32 +90,36 @@ services:
       - ./data/postgresql-draft:/var/lib/postgresql
       - ./logs/postgresql-draft:/var/log/postgresql
     networks:
-      draft-network:
+      sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.4"
 
   python:
     command: python3 -m http.server 1234
+#    image: python
     build:
       context: ./docker/python
+    working_dir: /sandbox
     volumes:
       - ./sandbox:/sandbox
     ports:
       - ${PYTHON_SANDBOX_PORT}:1234
     networks:
-      draft-network:
+      sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.5"
 
   php:
     command: php -S localhost:8000
+#    image: php
     build:
       context: ./docker/php
+    working_dir: /sandbox
     volumes:
       - ./sandbox:/sandbox
-#    ports:
-#      - ${PHP_SANDBOX_PORT}:8000
+    ports:
+      - ${PHP_SANDBOX_PORT}:8000
 #      - ${PHP_SANDBOX_YII2_PORT}:8888
     networks:
-      draft-network:
+      sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.6"
 
 #  myclickhouse:
@@ -127,7 +134,7 @@ services:
 ##      - ${CLICKHOUSE_PORT2}:9000
 ##      - ${CLICKHOUSE_PORT3}:9009
 #    networks:
-#      draft-network:
+#      sandbox-network:
 #        ipv4_address: "${SANDBOX_NETWORK_ID}.7"
 
   clickhouse:
@@ -136,8 +143,9 @@ services:
 #      - ${CLICKHOUSE_PORT1}:8123
 #      - ${CLICKHOUSE_PORT2}:9000
 #      - ${CLICKHOUSE_PORT3}:9009
+    working_dir: /sandbox
     networks:
-      draft-network:
+      sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.8"
     ulimits:
       nproc: 65535
@@ -154,7 +162,7 @@ networks:
     ipam:
       config:
         - subnet: "${LARAVEL_NETWORK_ID}.0/24"
-  draft-network:
+  sandbox-network:
     ipam:
       config:
         - subnet: "${SANDBOX_NETWORK_ID}.0/24"

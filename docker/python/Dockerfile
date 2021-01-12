@@ -1,3 +1,3 @@
 FROM python
 
-WORKDIR /sandbox
+RUN apt-get update && apt-get install -y atop nano

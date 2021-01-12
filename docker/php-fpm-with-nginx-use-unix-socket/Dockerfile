@@ -18,5 +18,5 @@ RUN sed -i 's@listen = 9000@listen = /sock/docker.sock@' $PATH_LISTEN_SETTINGS \
 RUN sed -i 's/user = www-data/user = '$NGINX_PHP_USER'/' /usr/local/etc/php-fpm.d/www.conf
 RUN sed -i 's/group = www-data/group = '$NGINX_PHP_USER'/' /usr/local/etc/php-fpm.d/www.conf
 
-WORKDIR /app
+#WORKDIR /app
 CMD ["php-fpm"]
