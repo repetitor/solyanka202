@@ -16,6 +16,7 @@ exit
 sudo chown -R 1000:1000 app-laravel/
 
 # ??? 755 - doesn't work
+# ??? 775 - doesn't work
 sudo chmod -R 777 app-laravel/storage/
 
 # browser >> 192.168.16.2
