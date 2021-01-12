@@ -108,7 +108,7 @@ services:
       context: ./docker/php
     volumes:
       - ./sandbox:/sandbox
-    ports:
+#    ports:
 #      - ${PHP_SANDBOX_PORT}:8000
 #      - ${PHP_SANDBOX_YII2_PORT}:8888
     networks:
