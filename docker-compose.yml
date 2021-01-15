@@ -50,7 +50,7 @@ services:
         CLIENT_HOST: "${SANDBOX_NETWORK_ID}.1"
     working_dir: /app
     volumes:
-      - ./app-laravel-web-socket:/app
+      - ./sandbox/draft/app-laravel-web-socket:/app
 #      - ./docker/web-socket-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
     networks:
       sandbox-network:
