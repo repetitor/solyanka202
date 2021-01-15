@@ -5,7 +5,7 @@
 ### deploy original laravel
 ```
 docker-compose up -d laravel
-docker-compose up -d nginx-laravel
+docker-compose up -d nginx
 
 #docker-compose exec <app> bash
 docker-compose exec laravel bash
@@ -24,8 +24,15 @@ exit
 
 # browser >> 192.168.16.2
 # or
-# sudo bash -c "echo \"192.168.16.12 laravel.docker.loc\" >> /etc/hosts"
+# sudo bash -c "echo \"192.168.16.2 laravel.docker.loc\" >> /etc/hosts"
 # browser >> laravel.docker.loc
+
+# xdebug
+# /etc/hosts
+# PHPSTORM
+# 1. File/Settings/Languages&Frameworks/PHP/Servers
+# 2. Run/Edit Configurations.../PHP Remote Debug/Filter debug connections by IDE key
+# 2.1 IDE key (session id): PHPSTORM
 ```
 
 ## OSs

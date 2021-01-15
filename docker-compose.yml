@@ -8,7 +8,7 @@ services:
       args:
         UID: $UID
         NGINX_PHP_USER: $NGINX_PHP_USER
-        URL: "laravel.docker"
+        URL: "laravel.docker.loc"
     volumes:
       - ./data/sock-laravel:/sock
 #      - ./docker/laravel-nginx/default.conf:/etc/nginx/sites-enabled/default
