@@ -2,49 +2,82 @@ version: '3.7'
 
 services:
   #  nginx, laravel, UNIX-socket
-  nginx-laravel:
+  nginx:
     build:
-      context: ./docker/nginx-with-php-fpm-use-unix-socket
+      context: docker/laravel-nginx
       args:
         UID: $UID
         NGINX_PHP_USER: $NGINX_PHP_USER
+        URL: "laravel.docker"
     volumes:
-      - ./data/sock:/sock
-      - ./docker/nginx-with-php-fpm-use-unix-socket/default.conf:/etc/nginx/sites-enabled/default
-      - ./logs/nginx-with-php-fpm-use-unix-socket:/var/log/nginx
+      - ./data/sock-laravel:/sock
+#      - ./docker/laravel-nginx/default.conf:/etc/nginx/sites-enabled/default
+      - ./logs/laravel-nginx:/var/log/nginx
     networks:
       laravel-network:
         ipv4_address: "${LARAVEL_NETWORK_ID}.2"
   laravel:
     build:
-      context: ./docker/php-fpm-with-nginx-use-unix-socket
+      context: docker/laravel-php-fpm
       args:
         UID: $UID
         NGINX_PHP_USER: $NGINX_PHP_USER
+        CLIENT_HOST: "${LARAVEL_NETWORK_ID}.1"
     working_dir: /app
     volumes:
-      - ./data/sock:/sock
+      - ./data/sock-laravel:/sock
       - ./app-laravel:/app
+#      - ./docker/laravel-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
   #  / nginx, laravel, UNIX-socket
+
+  #  nginx, laravel, web-socket
+  nginx-web-socket:
+    build:
+      context: docker/web-socket-nginx
+      args:
+        URL: "laravel.web-socket.docker"
+        IP: "${SANDBOX_NETWORK_ID}.12"
+    volumes:
+#      - ./docker/web-socket-nginx/default.conf:/etc/nginx/sites-enabled/default
+      - ./logs/web-socket-nginx:/var/log/nginx
+    networks:
+      sandbox-network:
+        ipv4_address: "${SANDBOX_NETWORK_ID}.11"
+  laravel-web-socket:
+    build:
+      context: docker/web-socket-php-fpm
+      args:
+        CLIENT_HOST: "${SANDBOX_NETWORK_ID}.1"
+    working_dir: /app
+    volumes:
+      - ./app-laravel-web-socket:/app
+#      - ./docker/web-socket-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    networks:
+      sandbox-network:
+        ipv4_address: "${SANDBOX_NETWORK_ID}.12"
+  #  / nginx, laravel, web-socket
 
   # core - private
   nginx-core:
     build:
-      context: ./docker/nginx-with-php-fpm-use-unix-socket
+      context: docker/laravel-nginx
       args:
         UID: $UID
         NGINX_PHP_USER: $NGINX_PHP_USER
     volumes:
       - ./data/sock-core:/sock
-      - ./docker/nginx-with-php-fpm-use-unix-socket/default.conf:/etc/nginx/sites-enabled/default
-      - ./logs/nginx-with-php-fpm-use-unix-socket:/var/log/nginx
+      - ./docker/laravel-nginx/default.conf:/etc/nginx/sites-enabled/default
+      - ./logs/laravel-nginx:/var/log/nginx
+#    ports:
+#      - 8095:80
+#    environment:
+#      PHP_IDE_CONFIG: serverName=docker
     networks:
       core-network:
         ipv4_address: "${CORE_NETWORK_ID}.2"
-
   core:
     build:
-      context: ./docker/php-fpm-with-nginx-use-unix-socket
+      context: docker/laravel-php-fpm
       args:
         UID: $UID
         NGINX_PHP_USER: $NGINX_PHP_USER

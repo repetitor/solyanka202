@@ -9,3 +9,4 @@ vendor
 /sandbox/draft
 
 /app-core
+/app-laravel-web-socket
