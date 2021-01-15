@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+//Route::get('get-public-test', function (Request $request) {
+//    return $request;
+//});
+Route::get('get-public-test', 'App\Http\Controllers\TestController@getPublicTest');
+
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
