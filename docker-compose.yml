@@ -1,92 +1,60 @@
 version: '3.7'
 
+networks:
+  laravel-network:
+    ipam:
+      config:
+        - subnet: "${LARAVEL_NETWORK_ID}.0/24"
+  sandbox-network:
+    ipam:
+      config:
+        - subnet: "${SANDBOX_NETWORK_ID}.0/24"
+#  laravel-app1-network:
+#    ipam:
+#      config:
+#        - subnet: "${LARAVEL_APP1_NETWORK_ID}.0/24"
+
+
 services:
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! laravel-network
   #  nginx, laravel, UNIX-socket
   nginx:
     build:
-      context: docker/laravel-nginx
+      context: docker/${APP_LARAVEL}-nginx
       args:
         UID: $UID
         NGINX_PHP_USER: $NGINX_PHP_USER
-        URL: "laravel.docker.loc"
+        URL: "${APP_LARAVEL}.${URL_POSTFIX}"
     volumes:
-      - ./data/sock-laravel:/sock
+      - ./data/sock-${APP_LARAVEL}:/sock
 #      - ./docker/laravel-nginx/default.conf:/etc/nginx/sites-enabled/default
-      - ./logs/laravel-nginx:/var/log/nginx
+      - ./logs/${APP_LARAVEL}-nginx:/var/log/nginx
     networks:
       laravel-network:
         ipv4_address: "${LARAVEL_NETWORK_ID}.2"
   laravel:
     build:
-      context: docker/laravel-php-fpm
+      context: docker/${APP_LARAVEL}-php-fpm
       args:
         UID: $UID
         NGINX_PHP_USER: $NGINX_PHP_USER
         CLIENT_HOST: "${LARAVEL_NETWORK_ID}.1"
     working_dir: /app
     volumes:
-      - ./data/sock-laravel:/sock
-      - ./app-laravel:/app
+      - ./data/sock-${APP_LARAVEL}:/sock
+      - ./app-${APP_LARAVEL}:/app
 #      - ./docker/laravel-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
   #  / nginx, laravel, UNIX-socket
 
-  #  nginx, laravel, web-socket
-  nginx-web-socket:
-    build:
-      context: docker/web-socket-nginx
-      args:
-        URL: "laravel.web-socket.docker"
-        IP: "${SANDBOX_NETWORK_ID}.12"
-    volumes:
-#      - ./docker/web-socket-nginx/default.conf:/etc/nginx/sites-enabled/default
-      - ./logs/web-socket-nginx:/var/log/nginx
-    networks:
-      sandbox-network:
-        ipv4_address: "${SANDBOX_NETWORK_ID}.11"
-  laravel-web-socket:
-    build:
-      context: docker/web-socket-php-fpm
-      args:
-        CLIENT_HOST: "${SANDBOX_NETWORK_ID}.1"
-    working_dir: /app
-    volumes:
-      - ./sandbox/draft/app-laravel-web-socket:/app
-#      - ./docker/web-socket-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
-    networks:
-      sandbox-network:
-        ipv4_address: "${SANDBOX_NETWORK_ID}.12"
-  #  / nginx, laravel, web-socket
 
-  # core - private
-  nginx-core:
-    build:
-      context: docker/laravel-nginx
-      args:
-        UID: $UID
-        NGINX_PHP_USER: $NGINX_PHP_USER
-    volumes:
-      - ./data/sock-core:/sock
-      - ./docker/laravel-nginx/default.conf:/etc/nginx/sites-enabled/default
-      - ./logs/laravel-nginx:/var/log/nginx
-#    ports:
-#      - 8095:80
-#    environment:
-#      PHP_IDE_CONFIG: serverName=docker
-    networks:
-      core-network:
-        ipv4_address: "${CORE_NETWORK_ID}.2"
-  core:
-    build:
-      context: docker/laravel-php-fpm
-      args:
-        UID: $UID
-        NGINX_PHP_USER: $NGINX_PHP_USER
-    working_dir: /app
-    volumes:
-      - ./data/sock-core:/sock
-      - ./app-core:/app
-  # /core - private
 
+
+
+
+
+
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! sandbox-network
   ubuntu:
     build:
       context: ./docker/ubuntu
@@ -100,13 +68,13 @@ services:
     image: mysql
 #    build:
 #      context: ./docker/mysql
-    working_dir: /sandbox
 #    restart: always
 #    ports:
 #      - ${MYSQL_PORT}:3306
     environment:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    working_dir: /sandbox
     volumes:
       - ./sandbox:/sandbox
       - ./data/mysql-draft:/var/lib/mysql
@@ -183,30 +151,6 @@ services:
       sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.6"
 
-  php-cli:
-    image: php:8.0.1-cli
-    working_dir: /var/www/html
-    volumes:
-      - ./sandbox:/var/www/html
-#    ports:
-#      - 8081:8081
-    command: php -S 0.0.0.0:8081
-    networks:
-      sandbox-network:
-        ipv4_address: "${SANDBOX_NETWORK_ID}.9"
-
-  php-cli2:
-    image: php:8.0.1-cli
-    working_dir: /sandbox
-    volumes:
-      - ./sandbox:/sandbox
-#    ports:
-#      - 8082:8082
-    command: php -S 0.0.0.0:8082 -t /sandbox
-    networks:
-      sandbox-network:
-        ipv4_address: "${SANDBOX_NETWORK_ID}.10"
-
 #  myclickhouse:
 ##    command: service clickhouse-server start && clickhouse-client
 ##    command: clickhouse-client
@@ -242,16 +186,114 @@ services:
 #    command: [ '--host', 'server' ]
 
 
-networks:
-  laravel-network:
-    ipam:
-      config:
-        - subnet: "${LARAVEL_NETWORK_ID}.0/24"
-  sandbox-network:
-    ipam:
-      config:
-        - subnet: "${SANDBOX_NETWORK_ID}.0/24"
-  core-network:
-    ipam:
-      config:
-        - subnet: "${CORE_NETWORK_ID}.0/24"
+  php-cli:
+    image: php:8.0.1-cli
+    working_dir: /var/www/html
+    volumes:
+      - ./sandbox:/var/www/html
+    #    ports:
+    #      - 8081:8081
+    command: php -S 0.0.0.0:8081
+    networks:
+      sandbox-network:
+        ipv4_address: "${SANDBOX_NETWORK_ID}.9"
+
+  php-cli2:
+    image: php:8.0.1-cli
+    working_dir: /sandbox
+    volumes:
+      - ./sandbox:/sandbox
+    #    ports:
+    #      - 8082:8082
+    command: php -S 0.0.0.0:8082 -t /sandbox
+    networks:
+      sandbox-network:
+        ipv4_address: "${SANDBOX_NETWORK_ID}.10"
+
+#  #  nginx, laravel, web-socket
+#  nginx-web-socket:
+#    build:
+#      context: docker/web-socket-nginx
+#      args:
+#        URL: "${APP_LARAVEL_WEB_SOCKET}.${URL_POSTFIX}"
+#        IP_PHP_FPM: "${SANDBOX_NETWORK_ID}.12"
+#    volumes:
+##      - ./docker/web-socket-nginx/default.conf:/etc/nginx/sites-enabled/default
+#      - ./logs/${APP_LARAVEL_WEB_SOCKET}-nginx:/var/log/nginx
+#    networks:
+#      sandbox-network:
+#        ipv4_address: "${SANDBOX_NETWORK_ID}.11"
+#  laravel-web-socket:
+#    build:
+#      context: docker/web-socket-php-fpm
+#      args:
+#        CLIENT_HOST: "${SANDBOX_NETWORK_ID}.1"
+#    working_dir: /app
+#    volumes:
+#      - $PATH_APP_LARAVEL_WEB_SOCKET:/app
+##      - ./docker/web-socket-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+#    networks:
+#      sandbox-network:
+#        ipv4_address: "${SANDBOX_NETWORK_ID}.12"
+#  #  / nginx, laravel, web-socket
+
+
+
+
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! laravel-app1-network
+#  # laravel-app1-unix-socket
+#  nginx-laravel-app1:
+#    build:
+#      context: docker/${APP_LARAVEL}-nginx
+#      args:
+#        UID: $UID
+#        NGINX_PHP_USER: $NGINX_PHP_USER
+#        URL: "${LARAVEL_APP1}.${URL_POSTFIX}"
+#    volumes:
+#      - ./data/sock-${LARAVEL_APP1}:/sock
+#      #      - ./docker/laravel-nginx/default.conf:/etc/nginx/sites-enabled/default
+#      - ./logs/${LARAVEL_APP1}-nginx:/var/log/nginx
+#    networks:
+#      laravel-app1-network:
+#        ipv4_address: "${LARAVEL_APP1_NETWORK_ID}.2"
+#  laravel-app1:
+#    build:
+#      context: docker/laravel-php-fpm
+#      args:
+#        UID: $UID
+#        NGINX_PHP_USER: $NGINX_PHP_USER
+#        CLIENT_HOST: "${LARAVEL_APP1_NETWORK_ID}.1"
+#    working_dir: /app
+#    volumes:
+#      - ./data/sock-${LARAVEL_APP1}:/sock
+#      - ${PATH_LARAVEL_APP1}:/app
+#  #      - ./docker/laravel-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+#  # /laravel-app1-unix-socket
+#
+#  #  laravel-app1-web-socket
+#  nginx-laravel-app1-web-socket:
+#    build:
+#      context: docker/web-socket-nginx
+#      args:
+#        URL: "${LARAVEL_APP1_WEB_SOCKET}.${URL_POSTFIX}"
+#        IP_PHP_FPM: "${LARAVEL_APP1_NETWORK_ID}.4"
+#    volumes:
+#      #      - ./docker/web-socket-nginx/default.conf:/etc/nginx/sites-enabled/default
+#      - ./logs/web-socket-nginx-core:/var/log/nginx
+#    networks:
+#      laravel-app1-network:
+#        ipv4_address: "${LARAVEL_APP1_NETWORK_ID}.3"
+#  laravel-app1-web-socket:
+#    build:
+#      context: docker/web-socket-php-fpm
+#      args:
+#        CLIENT_HOST: "${LARAVEL_APP1_NETWORK_ID}.1"
+#    working_dir: /app
+#    volumes:
+#      - ${PATH_LARAVEL_APP1_WEB_SOCKET}:/app
+#    #      - ./docker/web-socket-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+#    networks:
+#      laravel-app1-network:
+#        ipv4_address: "${LARAVEL_APP1_NETWORK_ID}.4"
+#  #  / laravel-app1-web-socket

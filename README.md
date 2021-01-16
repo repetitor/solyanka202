@@ -1,5 +1,9 @@
 # solyanka202
 
+```
+docker-compose config
+```
+
 ## apps
 
 ### deploy original laravel
@@ -24,8 +28,8 @@ exit
 
 # browser >> 192.168.16.2
 # or
-# sudo bash -c "echo \"192.168.16.2 laravel.docker.loc\" >> /etc/hosts"
-# browser >> laravel.docker.loc
+# sudo bash -c "echo \"192.168.16.2 laravel.docker.solyanka202.loc\" >> /etc/hosts"
+# browser >> laravel.docker.solyanka202.loc
 
 # xdebug
 # /etc/hosts
