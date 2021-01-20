@@ -9,206 +9,232 @@ networks:
     ipam:
       config:
         - subnet: "${SANDBOX_NETWORK_ID}.0/24"
-#  laravel-app1-network:
-#    ipam:
-#      config:
-#        - subnet: "${LARAVEL_APP1_NETWORK_ID}.0/24"
 
 
 services:
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! laravel-network
-  #  nginx, laravel, UNIX-socket
-  nginx:
-    build:
-      context: docker/${APP_LARAVEL}-nginx
-      args:
-        UID: $UID
-        NGINX_PHP_USER: $NGINX_PHP_USER
-        URL: "${APP_LARAVEL}.${URL_POSTFIX}"
-    volumes:
-      - ./data/sock-${APP_LARAVEL}:/sock
-#      - ./docker/laravel-nginx/default.conf:/etc/nginx/sites-enabled/default
-      - ./logs/${APP_LARAVEL}-nginx:/var/log/nginx
-    networks:
-      laravel-network:
-        ipv4_address: "${LARAVEL_NETWORK_ID}.2"
+  #  UNIX-socket
   laravel:
     build:
-      context: docker/${APP_LARAVEL}-php-fpm
+      context: docker/laravel-php-fpm
       args:
         UID: $UID
         NGINX_PHP_USER: $NGINX_PHP_USER
         CLIENT_HOST: "${LARAVEL_NETWORK_ID}.1"
+    image: solyanka202:${APP_LARAVEL}-php7.4-fpm
+    container_name: ${APP_LARAVEL}-php7.4-fpm-container
     working_dir: /app
     volumes:
       - ./data/sock-${APP_LARAVEL}:/sock
-      - ./app-${APP_LARAVEL}:/app
+      - ./app-laravel:/app
 #      - ./docker/laravel-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
-  #  / nginx, laravel, UNIX-socket
+    networks:
+      laravel-network:
+        ipv4_address: "${LARAVEL_NETWORK_ID}.2"
 
+  nginx-laravel:
+    build:
+      context: docker/laravel-nginx
+      args:
+        UID: $UID
+        NGINX_PHP_USER: $NGINX_PHP_USER
+        URL: "${APP_LARAVEL}.${URL_POSTFIX}"
+    image: solyanka202:${APP_LARAVEL}-nginx
+    container_name: ${APP_LARAVEL}-nginx-container
+    volumes:
+      - ./data/sock-${APP_LARAVEL}:/sock
+      - ./logs/nginx-${APP_LARAVEL}:/var/log/nginx
+#      - ./docker/laravel-nginx/default.conf:/etc/nginx/sites-enabled/default
+    networks:
+      laravel-network:
+        ipv4_address: "${LARAVEL_NETWORK_ID}.3"
 
+  mariadb-laravel:
+    command: --default-authentication-plugin=mysql_native_password
+    image: mariadb
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    container_name: ${APP_LARAVEL}-mariadb-container
+    volumes:
+      - ./data/mariadb-${APP_LARAVEL}:/var/lib/mysql
+      - ./logs/mariadb-${APP_LARAVEL}:/var/log/mysql
+    networks:
+      laravel-network:
+        ipv4_address: "${LARAVEL_NETWORK_ID}.4"
 
+  mysql-laravel:
+    command: --default-authentication-plugin=mysql_native_password
+    image: mysql
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    container_name: ${APP_LARAVEL}-mysql-container
+    volumes:
+      - ./data/mysql-${APP_LARAVEL}:/var/lib/mysql
+      - ./logs/mysql-${APP_LARAVEL}:/var/log/mysql
+    networks:
+      laravel-network:
+        ipv4_address: "${LARAVEL_NETWORK_ID}.5"
 
+  mysql5-laravel:
+    image: mysql:5.7.22
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    container_name: ${APP_LARAVEL}-mysql5.7.22-container
+    volumes:
+      - ./data/mysql5-${APP_LARAVEL}:/var/lib/mysql
+      - ./logs/mysql5-${APP_LARAVEL}:/var/log/mysql
+    networks:
+      laravel-network:
+        ipv4_address: "${LARAVEL_NETWORK_ID}.6"
 
-
+  postgres10-laravel:
+    build:
+      context: ./docker/postgres10.14
+    image: solyanka202:${APP_LARAVEL}-postgres10.14
+    environment:
+      POSTGRES_PASSWORD: ${DB_ROOT_PASSWORD}
+    container_name: ${APP_LARAVEL}-postgres10.14-container
+    volumes:
+      - ./data/postgres10-${APP_LARAVEL}:/var/lib/postgresql
+      - ./logs/postgres10-${APP_LARAVEL}:/var/log/postgresql
+    networks:
+      laravel-network:
+        ipv4_address: "${LARAVEL_NETWORK_ID}.7"
+  #  / UNIX-socket
 
 
 
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! sandbox-network
-  ubuntu:
+  ubuntu-sandbox:
     build:
       context: ./docker/ubuntu
-    image: ubuntu202
+    image: solyanka202:sandbox-ubuntu
+    container_name: sandbox-ubuntu-container
     working_dir: /sandbox
     volumes:
       - ./sandbox:/sandbox
 
-  mysql:
+  mysql-sandbox:
+#    restart: always
     command: --default-authentication-plugin=mysql_native_password
     image: mysql
-#    build:
-#      context: ./docker/mysql
-#    restart: always
-#    ports:
-#      - ${MYSQL_PORT}:3306
     environment:
       MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    container_name: sandbox-mysql-container
     working_dir: /sandbox
     volumes:
       - ./sandbox:/sandbox
-      - ./data/mysql-draft:/var/lib/mysql
-      - ./logs/mysql-draft:/var/log/mysql
+      - ./data/mysql-sandbox:/var/lib/mysql
+      - ./logs/mysql-sandbox:/var/log/mysql
     networks:
       sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.2"
+#    ports:
+#      - ${MYSQL_PORT}:3306
 
-  mariadb:
+  mariadb-sandbox:
+#    restart: always
     command: --default-authentication-plugin=mysql_native_password
     image: mariadb
-#    build:
-#      context: ./docker/mariadb
-    working_dir: /sandbox
-#    restart: always
-#    ports:
-#      - ${MARIADB_PORT}:3306
     environment:
       MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    container_name: sandbox-mariadb-container
+    working_dir: /sandbox
     volumes:
       - ./sandbox:/sandbox
-      - ./data/mariadb-draft:/var/lib/mysql
-      - ./logs/mariadb-draft:/var/log/mysql
+      - ./data/mariadb-sandbox:/var/lib/mysql
+      - ./logs/mariadb-sandbox:/var/log/mysql
     networks:
       sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.3"
-
-  postgres:
-#    image: postgres:10.14
-    build:
-      context: ./docker/postgres
-    working_dir: /sandbox
-#    restart: always
 #    ports:
-#      - ${POSTGRES_PORT}:5432
+#      - ${MARIADB_PORT}:3306
+
+  postgres10-sandbox:
+#    restart: always
+    build:
+      context: ./docker/postgres10.14
+    image: solyanka202:sandbox-postgres10.14
     environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_ROOT_PASSWORD}
+    container_name: sandbox-postgres10.14-container
+    working_dir: /sandbox
     volumes:
       - ./sandbox:/sandbox
-      - ./data/postgresql-draft:/var/lib/postgresql
-      - ./logs/postgresql-draft:/var/log/postgresql
+      - ./data/postgres10-sandbox:/var/lib/postgresql
+      - ./logs/postgres10-sandbox:/var/log/postgresql
     networks:
       sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.4"
+#    ports:
+#      - ${POSTGRES_PORT}:5432
 
-  python:
-    command: python3 -m http.server 1234
-#    image: python
-    build:
-      context: ./docker/python
+  clickhouse-sandbox:
+    image: yandex/clickhouse-server
+    container_name: sandbox-clickhouse-container
     working_dir: /sandbox
-    volumes:
-      - ./sandbox:/sandbox
-    ports:
-      - ${PYTHON_SANDBOX_PORT}:1234
     networks:
       sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.5"
-
-  php:
-#    command: php -S 0.0.0.0:8000 -t /sandbox
-    command: php -S 0.0.0.0:8000
-#    image: php
-    build:
-      context: ./docker/php
-    working_dir: /sandbox
-    volumes:
-      - ./sandbox:/sandbox
-    ports:
-      - ${PHP_SANDBOX_PORT}:8000
-#      - ${PHP_SANDBOX_YII2_PORT}:8888
-    networks:
-      sandbox-network:
-        ipv4_address: "${SANDBOX_NETWORK_ID}.6"
-
-#  myclickhouse:
-##    command: service clickhouse-server start && clickhouse-client
-##    command: clickhouse-client
-#    build:
-#      context: ./docker/my_clickhouse
-#    volumes:
-#      - ./sandbox:/sandbox
-##    ports:
-##      - ${CLICKHOUSE_PORT1}:8123
-##      - ${CLICKHOUSE_PORT2}:9000
-##      - ${CLICKHOUSE_PORT3}:9009
-#    networks:
-#      sandbox-network:
-#        ipv4_address: "${SANDBOX_NETWORK_ID}.7"
-
-  clickhouse:
-    image: yandex/clickhouse-server
 #    ports:
 #      - ${CLICKHOUSE_PORT1}:8123
 #      - ${CLICKHOUSE_PORT2}:9000
 #      - ${CLICKHOUSE_PORT3}:9009
-    working_dir: /sandbox
-    networks:
-      sandbox-network:
-        ipv4_address: "${SANDBOX_NETWORK_ID}.8"
     ulimits:
       nproc: 65535
       nofile:
         soft: 262144
         hard: 262144
-#  clickhouse_client:
-#    image: yandex/clickhouse-client
-#    command: [ '--host', 'server' ]
 
-
-  php-cli:
-    image: php:8.0.1-cli
-    working_dir: /var/www/html
-    volumes:
-      - ./sandbox:/var/www/html
-    #    ports:
-    #      - 8081:8081
-    command: php -S 0.0.0.0:8081
-    networks:
-      sandbox-network:
-        ipv4_address: "${SANDBOX_NETWORK_ID}.9"
-
-  php-cli2:
-    image: php:8.0.1-cli
+  python-sandbox:
+    command: python3 -m http.server 1234
+    build:
+      context: ./docker/python
+    image: solyanka202:sandbox-python
+    container_name: sandbox-python-container
     working_dir: /sandbox
     volumes:
       - ./sandbox:/sandbox
-    #    ports:
-    #      - 8082:8082
-    command: php -S 0.0.0.0:8082 -t /sandbox
     networks:
       sandbox-network:
-        ipv4_address: "${SANDBOX_NETWORK_ID}.10"
+        ipv4_address: "${SANDBOX_NETWORK_ID}.6"
+    ports:
+      - ${PYTHON_SANDBOX_PORT}:1234
+
+  php-sandbox:
+#    command: php -S 0.0.0.0:8000 -t /sandbox
+    command: php -S 0.0.0.0:8000
+    build:
+      context: ./docker/php
+    image: solyanka202:sandbox-php
+    container_name: sandbox-php-container
+    working_dir: /sandbox
+    volumes:
+      - ./sandbox:/sandbox
+    networks:
+      sandbox-network:
+        ipv4_address: "${SANDBOX_NETWORK_ID}.7"
+    ports:
+      - ${PHP_SANDBOX_PORT}:8000
+#      - ${PHP_SANDBOX_YII2_PORT}:8888
+
+  php8-cli-sandbox:
+    command: php -S 0.0.0.0:8081
+    image: php:8.0.1-cli
+    container_name: sandbox-php8.0.1-cli-container
+    working_dir: /var/www/html
+    volumes:
+      - ./sandbox:/var/www/html
+    networks:
+      sandbox-network:
+        ipv4_address: "${SANDBOX_NETWORK_ID}.8"
+#    ports:
+#      - 8081:8081
 
 #  #  nginx, laravel, web-socket
 #  nginx-web-socket:
@@ -217,17 +243,22 @@ services:
 #      args:
 #        URL: "${APP_LARAVEL_WEB_SOCKET}.${URL_POSTFIX}"
 #        IP_PHP_FPM: "${SANDBOX_NETWORK_ID}.12"
+#    image: solyanka202:${APP_LARAVEL}-nginx-web-socket
+#    container_name: ${APP_LARAVEL}-nginx-container-web-socket
 #    volumes:
 ##      - ./docker/web-socket-nginx/default.conf:/etc/nginx/sites-enabled/default
-#      - ./logs/${APP_LARAVEL_WEB_SOCKET}-nginx:/var/log/nginx
+#      - ./logs/nginx-${APP_LARAVEL_WEB_SOCKET}:/var/log/nginx
 #    networks:
 #      sandbox-network:
 #        ipv4_address: "${SANDBOX_NETWORK_ID}.11"
+#
 #  laravel-web-socket:
 #    build:
 #      context: docker/web-socket-php-fpm
 #      args:
 #        CLIENT_HOST: "${SANDBOX_NETWORK_ID}.1"
+#    image: solyanka202:${APP_LARAVEL}-php7.4-fpm-web-socket
+#    container_name: ${APP_LARAVEL}-php7.4-fpm-container-web-socket
 #    working_dir: /app
 #    volumes:
 #      - $PATH_APP_LARAVEL_WEB_SOCKET:/app
@@ -236,64 +267,3 @@ services:
 #      sandbox-network:
 #        ipv4_address: "${SANDBOX_NETWORK_ID}.12"
 #  #  / nginx, laravel, web-socket
-
-
-
-
-
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! laravel-app1-network
-#  # laravel-app1-unix-socket
-#  nginx-laravel-app1:
-#    build:
-#      context: docker/${APP_LARAVEL}-nginx
-#      args:
-#        UID: $UID
-#        NGINX_PHP_USER: $NGINX_PHP_USER
-#        URL: "${LARAVEL_APP1}.${URL_POSTFIX}"
-#    volumes:
-#      - ./data/sock-${LARAVEL_APP1}:/sock
-#      #      - ./docker/laravel-nginx/default.conf:/etc/nginx/sites-enabled/default
-#      - ./logs/${LARAVEL_APP1}-nginx:/var/log/nginx
-#    networks:
-#      laravel-app1-network:
-#        ipv4_address: "${LARAVEL_APP1_NETWORK_ID}.2"
-#  laravel-app1:
-#    build:
-#      context: docker/laravel-php-fpm
-#      args:
-#        UID: $UID
-#        NGINX_PHP_USER: $NGINX_PHP_USER
-#        CLIENT_HOST: "${LARAVEL_APP1_NETWORK_ID}.1"
-#    working_dir: /app
-#    volumes:
-#      - ./data/sock-${LARAVEL_APP1}:/sock
-#      - ${PATH_LARAVEL_APP1}:/app
-#  #      - ./docker/laravel-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
-#  # /laravel-app1-unix-socket
-#
-#  #  laravel-app1-web-socket
-#  nginx-laravel-app1-web-socket:
-#    build:
-#      context: docker/web-socket-nginx
-#      args:
-#        URL: "${LARAVEL_APP1_WEB_SOCKET}.${URL_POSTFIX}"
-#        IP_PHP_FPM: "${LARAVEL_APP1_NETWORK_ID}.4"
-#    volumes:
-#      #      - ./docker/web-socket-nginx/default.conf:/etc/nginx/sites-enabled/default
-#      - ./logs/web-socket-nginx-core:/var/log/nginx
-#    networks:
-#      laravel-app1-network:
-#        ipv4_address: "${LARAVEL_APP1_NETWORK_ID}.3"
-#  laravel-app1-web-socket:
-#    build:
-#      context: docker/web-socket-php-fpm
-#      args:
-#        CLIENT_HOST: "${LARAVEL_APP1_NETWORK_ID}.1"
-#    working_dir: /app
-#    volumes:
-#      - ${PATH_LARAVEL_APP1_WEB_SOCKET}:/app
-#    #      - ./docker/web-socket-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
-#    networks:
-#      laravel-app1-network:
-#        ipv4_address: "${LARAVEL_APP1_NETWORK_ID}.4"
-#  #  / laravel-app1-web-socket
