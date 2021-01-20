@@ -1,0 +1,22 @@
+{
+  "name": "repetitor202/app-php",
+  "description": "app php",
+  "type": "project",
+  "authors": [
+    {
+      "name": "Viktar Akulenka",
+      "email": "repetitor202@gmail.com"
+    }
+  ],
+  "require": {
+    "smi2/phpclickhouse": "dev-master",
+    "vlucas/phpdotenv": "5.2.x-dev"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src",
+      "Repetitor202\\": "src/Repetitor202"
+    }
+  },
+  "minimum-stability": "dev"
+}
