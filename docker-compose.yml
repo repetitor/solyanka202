@@ -274,3 +274,12 @@ services:
     tty: true
     volumes:
       - ./sandbox/draft/sqlite3-sandbox/:/root/db/
+
+#  composer-sandbox:
+#    image: composer
+#    container_name: composer_installation
+#    working_dir: /app
+#    volumes:
+#      - ./app_${APP_LARAVEL1}:/app
+#    command: composer install --ignore-platform-reqs
+##    command: composer install

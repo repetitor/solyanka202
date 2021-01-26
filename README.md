@@ -97,7 +97,7 @@ docker-compose exec clickhouse-sandbox bash
 clickhouse-client
 ```
 
-### sqlite
+### sqlite3
 ```
 docker-compose up -d sqlite3-sandbox
 docker-compose exec sqlite3-sandbox bash
