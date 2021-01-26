@@ -28,6 +28,7 @@ services:
       - ./data/sock-${APP_LARAVEL}:/sock
       - ./app-laravel:/app
 #      - ./docker/laravel-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./data/sqlite3-${APP_LARAVEL}/mydbname:/app/sqlite-data/mydbname
     networks:
       laravel-network:
         ipv4_address: "${LARAVEL_NETWORK_ID}.2"
@@ -103,6 +104,17 @@ services:
     networks:
       laravel-network:
         ipv4_address: "${LARAVEL_NETWORK_ID}.7"
+
+  sqlite3-laravel:
+    image: nouchka/sqlite3:latest
+    stdin_open: true
+    tty: true
+    container_name: ${APP_LARAVEL}-sqlite3-container
+    volumes:
+      - ./data/sqlite3-${APP_LARAVEL}:/root/db/
+    networks:
+      laravel-network:
+        ipv4_address: "${LARAVEL_NETWORK_ID}.8"
   #  / UNIX-socket
 
 
