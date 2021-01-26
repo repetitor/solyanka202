@@ -267,3 +267,19 @@ services:
 #      sandbox-network:
 #        ipv4_address: "${SANDBOX_NETWORK_ID}.12"
 #  #  / nginx, laravel, web-socket
+
+  sqlite3-sandbox:
+    image: nouchka/sqlite3:latest
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./sandbox/draft/sqlite3-sandbox/:/root/db/
+
+#  composer-sandbox:
+#    image: composer
+#    container_name: composer_installation
+#    working_dir: /app
+#    volumes:
+#      - ./app_${APP_LARAVEL1}:/app
+#    command: composer install --ignore-platform-reqs
+##    command: composer install
