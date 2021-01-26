@@ -20,12 +20,12 @@ php artisan key:generate
 #composer install --ignore-platform-reqs
 composer install
 
-###chown -R $USER:$USER ./../app
 #chown -R <UID>:<GID> ./../app
 chown -R 1000:1000 ./../app
 
 exit
 # =>
+### sudo chown -R $USER:$USER ./app
 
 # browser >> 192.168.16.3
 # or
@@ -95,6 +95,24 @@ docker-compose up -d clickhouse-sandbox
 docker-compose exec clickhouse-sandbox bash
 # =>
 clickhouse-client
+```
+
+### sqlite
+```
+docker-compose up -d sqlite3-sandbox
+docker-compose exec sqlite3-sandbox bash
+# =>
+sqlite3 docker-sqlite-db
+=>
+CREATE TABLE myTable (id INTEGER, name VARCHAR(100));
+insert into myTable (id, name) values (1, 'name2');
+select * from myTable;
+.quit
+
+# =>
+exit
+# =>
+sudo chown -R $USER:$USER sandbox/draft/sqlite3-sandbox/
 ```
 
 ## languages

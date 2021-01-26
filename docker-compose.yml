@@ -267,3 +267,10 @@ services:
 #      sandbox-network:
 #        ipv4_address: "${SANDBOX_NETWORK_ID}.12"
 #  #  / nginx, laravel, web-socket
+
+  sqlite3-sandbox:
+    image: nouchka/sqlite3:latest
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./sandbox/draft/sqlite3-sandbox/:/root/db/
