@@ -248,6 +248,31 @@ services:
 #    ports:
 #      - 8081:8081
 
+
+  php_mini:
+    command: php -S 0.0.0.0:8000
+    build:
+      context: ./docker/php_mini
+    image: solyanka202:sandbox-php_mini
+    working_dir: /sandbox
+    volumes:
+      - ./sandbox:/sandbox
+    networks:
+      sandbox-network:
+        ipv4_address: "${SANDBOX_NETWORK_ID}.9"
+
+  php_mini_with_git:
+    command: php -S 0.0.0.0:8000
+    build:
+      context: ./docker/php_mini_with_git
+    image: solyanka202:sandbox-php_mini_with_git
+    working_dir: /sandbox
+    volumes:
+      - ./sandbox:/sandbox
+    networks:
+      sandbox-network:
+        ipv4_address: "${SANDBOX_NETWORK_ID}.10"
+
 #  #  nginx, laravel, web-socket
 #  nginx-web-socket:
 #    build:
