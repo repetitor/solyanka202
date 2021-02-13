@@ -254,9 +254,9 @@ services:
     build:
       context: ./docker/php_mini
     image: solyanka202:sandbox-php_mini
-    working_dir: /sandbox
+    working_dir: /sandbox/draft
     volumes:
-      - ./sandbox:/sandbox
+      - ./sandbox/draft:/sandbox/draft
     networks:
       sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.9"
@@ -266,9 +266,9 @@ services:
     build:
       context: ./docker/php_mini_with_git
     image: solyanka202:sandbox-php_mini_with_git
-    working_dir: /sandbox
+    working_dir: /sandbox/draft
     volumes:
-      - ./sandbox:/sandbox
+      - ./sandbox/draft:/sandbox/draft
     networks:
       sandbox-network:
         ipv4_address: "${SANDBOX_NETWORK_ID}.10"
