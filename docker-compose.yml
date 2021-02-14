@@ -26,9 +26,9 @@ services:
     working_dir: /app
     volumes:
       - ./data/sock-${APP_LARAVEL}:/sock
-      - ./app-laravel:/app
+      - ${APP_LARAVEL_PATH}:/app
 #      - ./docker/laravel-php-fpm/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
-      - ./data/sqlite3-${APP_LARAVEL}/mydbname:/app/sqlite-data/mydbname
+#      - ./data/sqlite3-${APP_LARAVEL}/mydbname:/app/sqlite-data/mydbname
     networks:
       laravel-network:
         ipv4_address: "${LARAVEL_NETWORK_ID}.2"
@@ -45,6 +45,7 @@ services:
     volumes:
       - ./data/sock-${APP_LARAVEL}:/sock
       - ./logs/nginx-${APP_LARAVEL}:/var/log/nginx
+      - ${APP_LARAVEL_PATH}:/app
 #      - ./docker/laravel-nginx/default.conf:/etc/nginx/sites-enabled/default
     networks:
       laravel-network:
